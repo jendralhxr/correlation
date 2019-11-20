@@ -1,4 +1,7 @@
 #include "polygon_class.h"
+#include <math.h>
+
+#define EPSILON float(1e-6)
 
 void polygon_class::add( vertexStruct *p )
 {
@@ -155,7 +158,7 @@ bool polygon_class::between(    vertexStruct *v1 ,
 {
     if ( !collinear( v1 , v2 , v3 ) ) return false;
 
-    if ( v1->coordinates.first != v2->coordinates.first )
+    if ( fabs(v1->coordinates.first - v2->coordinates.first) < EPSILON)
     {
         return ( ( v1->coordinates.first <= v3->coordinates.first ) &&
                  ( v3->coordinates.first <= v2->coordinates.first ) ) ||
@@ -351,17 +354,17 @@ v_points polygon_class::trianglePoints( vertexStruct *v1 ,
                                         vertexStruct *v2 ,
                                         vertexStruct *v3 )
 {
-    if ( v2->coordinates.second == v1->coordinates.second )     // if one of the sides is already horizontal - call flat Triange
+    if ( fabs(v2->coordinates.second - v1->coordinates.second) < EPSILON )     // if one of the sides is already horizontal - call flat Triange
     {
         flatTrianglePoints( v1 , v2 , v3 );
     }
 
-    if ( v3->coordinates.second == v1->coordinates.second )
+    if ( fabs(v3->coordinates.second - v1->coordinates.second) < EPSILON )
     {
         flatTrianglePoints( v3 , v1 , v2 );
     }
 
-    if ( v3->coordinates.second == v2->coordinates.second )
+    if ( fabs(v3->coordinates.second - v2->coordinates.second) < EPSILON )
     {
         flatTrianglePoints( v2 , v3 , v1 );
     }
@@ -442,8 +445,8 @@ v_points polygon_class::flatTrianglePoints( vertexStruct *v1 ,  // v1 nad v2 hav
 {
     v_points all;
 
-    int dy = floor( v3->coordinates.second ) - floor( v1->coordinates.second );
-    int dx = floor( v2->coordinates.first  ) - floor( v1->coordinates.first  );
+    int dy = int (floor( v3->coordinates.second )) - int( floor( v1->coordinates.second ));
+    int dx = int (floor( v2->coordinates.first  )) - int( floor( v1->coordinates.first  ));
 
     if ( dx == 0 || dy == 0 )
     {
@@ -469,21 +472,21 @@ v_points polygon_class::flatTrianglePoints( vertexStruct *v1 ,  // v1 nad v2 hav
     int jInit , jEnd;
     if ( dy > 0 )
     {
-        jInit = ceil( v1->coordinates.second );
-        jEnd  = ceil( v3->coordinates.second );
+        jInit = int (ceil( v1->coordinates.second ));
+        jEnd  = int (ceil( v3->coordinates.second ));
     }
     else
     {
-        jInit = ceil( v3->coordinates.second );
-        jEnd  = ceil( v1->coordinates.second );
+        jInit = int (ceil( v3->coordinates.second ));
+        jEnd  = int (ceil( v1->coordinates.second ));
     }
 
-    all.reserve( ( ( abs ( dx ) + 1 ) * ( abs ( dy ) + 1 ) ) / 2 );
+    all.reserve( ( ( ulong (abs ( dx )) + 1 ) * ( ulong (abs ( dy )) + 1 ) ) / 2 );
 
     for ( int j = jInit ; j < jEnd ; ++j )
     {
-        int iInit = ceil ( dxdySmall * (float) j + x0Small );
-        int iEnd  = ceil ( dxdyBig   * (float) j + x0Big   );
+        int iInit = int (ceil ( dxdySmall * float(j) + x0Small ));
+        int iEnd  = int (ceil ( dxdyBig   * float(j) + x0Big   ));
 
         for ( int i = iInit ; i < iEnd ; ++i )
         {
@@ -502,7 +505,7 @@ bool polygon_class::line( vertexStruct *v1 ,
     float denominator = v2->coordinates.second - v1->coordinates.second;
     bool error = true;
 
-    if ( denominator != 0 )
+    if ( denominator < EPSILON )
     {
         dxdy = ( v2->coordinates.first - v1->coordinates.first ) /
                 denominator;
@@ -515,7 +518,7 @@ bool polygon_class::line( vertexStruct *v1 ,
 v_points polygonBlob_class::getInsidePoints( )
 {
     v_points all;
-    all.reserve( (int) ( domainArea * 1.2f ) );
+    all.reserve( ulong (( domainArea * 1.2f )));
 
     for ( auto triangle : triangles )
     {
